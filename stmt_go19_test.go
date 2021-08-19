@@ -178,7 +178,7 @@ func (wrapStmtInterceptor) ConnPrepareContext(ctx context.Context, conn driver.C
 	return &userWrappedStmt{Stmt: stmt, userData: true}, nil
 }
 
-func (wrapStmtInterceptor) StmtExecContext(ctx context.Context, stmt *Stmt, _ string, args []driver.NamedValue) (driver.Result, error) {
+func (wrapStmtInterceptor) StmtExecContext(ctx context.Context, stmt *Stmt, args []driver.NamedValue) (driver.Result, error) {
 	ud, ok := stmt.Parent().(*userWrappedStmt)
 	if !ok {
 		return nil, fmt.Errorf("stmt.Parent() has type %t, expected *userWrappedStmt", stmt.Parent())
@@ -195,7 +195,7 @@ func (wrapStmtInterceptor) StmtExecContext(ctx context.Context, stmt *Stmt, _ st
 	return stmt.ExecContext(ctx, args)
 }
 
-func (wrapStmtInterceptor) StmtQueryContext(ctx context.Context, stmt *Stmt, _ string, args []driver.NamedValue) (driver.Rows, error) {
+func (wrapStmtInterceptor) StmtQueryContext(ctx context.Context, stmt *Stmt, args []driver.NamedValue) (driver.Rows, error) {
 	ud, ok := stmt.Parent().(*userWrappedStmt)
 	if !ok {
 		return nil, fmt.Errorf("stmt.Parent() has type %t, expected *userWrappedStmt", stmt.Parent())

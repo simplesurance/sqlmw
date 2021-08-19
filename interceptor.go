@@ -25,8 +25,8 @@ type Interceptor interface {
 	RowsClose(driver.Rows) error
 
 	// Stmt interceptors
-	StmtExecContext(context.Context, *Stmt, string, []driver.NamedValue) (driver.Result, error)
-	StmtQueryContext(context.Context, *Stmt, string, []driver.NamedValue) (driver.Rows, error)
+	StmtExecContext(context.Context, *Stmt, []driver.NamedValue) (driver.Result, error)
+	StmtQueryContext(context.Context, *Stmt, []driver.NamedValue) (driver.Rows, error)
 	StmtClose(*Stmt) error
 
 	// Tx interceptors
@@ -81,11 +81,11 @@ func (NullInterceptor) RowsClose(rows driver.Rows) error {
 	return rows.Close()
 }
 
-func (NullInterceptor) StmtExecContext(ctx context.Context, stmt *Stmt, _ string, args []driver.NamedValue) (driver.Result, error) {
+func (NullInterceptor) StmtExecContext(ctx context.Context, stmt *Stmt, args []driver.NamedValue) (driver.Result, error) {
 	return stmt.ExecContext(ctx, args)
 }
 
-func (NullInterceptor) StmtQueryContext(ctx context.Context, stmt *Stmt, _ string, args []driver.NamedValue) (driver.Rows, error) {
+func (NullInterceptor) StmtQueryContext(ctx context.Context, stmt *Stmt, args []driver.NamedValue) (driver.Rows, error) {
 	return stmt.QueryContext(ctx, args)
 }
 
