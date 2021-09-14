@@ -1,3 +1,3 @@
-module github.com/ngrok/sqlmw
+module github.com/simplesurance/sqlmw
 
 go 1.13

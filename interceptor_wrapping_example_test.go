@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ngrok/sqlmw"
+	"github.com/simplesurance/sqlmw"
 )
 
 type MyInterceptor struct {
