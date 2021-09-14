@@ -148,25 +148,6 @@ func (in *sqlInterceptor) ConnQueryContext(ctx context.Context, conn driver.Quer
 
 See [interceptor_wrapping_example_test.go](interceptor_wrapping_example_test.go).
 
-## Comparison with similar projects
-
-There are a number of other packages that allow the programmer to wrap a `database/sql/driver.Driver` to add logging or tracing.
-
-Examples of tracing packages:
-  - github.com/ExpansiveWorlds/instrumentedsql
-  - contrib.go.opencensus.io/integrations/ocsql
-  - gopkg.in/DataDog/dd-trace-go.v1/contrib/database/sql
-
-A few provide a much more flexible setup of arbitrary before/after hooks to facilitate custom observability.
-
-Packages that provide before/after hooks:
-  - github.com/gchaincl/sqlhooks
-  - github.com/shogo82148/go-sql-proxy
-
-None of these packages provide an interface with sufficient power. `sqlmw` passes control of executing the
-sql query to the caller which allows the caller to completely disintermediate the sql calls. This is what provides
-the power to implement advanced behaviors like caching, sharding, retries, etc.
-
 ## Go version support
 
 Go versions 1.13 and forward are supported.
