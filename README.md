@@ -173,7 +173,8 @@ Go versions 1.13 and forward are supported.
 
 ## Project Status
 
-This is a fork of github.com/ngrok/sqlmw with the following changes:
+This is a fork of [github.com/ngrok/sqlmw](https://github.com/ngrok/sqlmw) with
+the following changes:
 - `driver.Stmt` returned from `PrepareContext()` can be wrapped and the custom
   type is accessible in the methods of `Stmt`.
 - `StmtExecContext` and `StmtQueryContext` do not get the query string from
