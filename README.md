@@ -148,12 +148,15 @@ the power to implement advanced behaviors like caching, sharding, retries, etc.
 
 Go versions 1.13 and forward are supported.
 
-## Fork
-
-This project began by forking the code in github.com/luna-duclos/instrumentedsql, which itself is a fork of github.com/ExpansiveWorlds/instrumentedsql
-
 ## Project Status
 
-sqlmw is an early stage. \
-A version that guarantees API compatibility has not been released yet. \
-Breaking API changes can happen anytime in the master branch.
+This is a fork of github.com/ngrok/sqlmw with the following changes:
+- `driver.Stmt` returned from `PrepareContext()` can be wrapped and the custom
+  type is accessible in the methods of `Stmt`.
+- `StmtExecContext` and `StmtQueryContext` do not get the query string from
+  `PrepareContext()`, the query can be forwarded by wrapping the `Stmt`.
+- The additional `context.Context` parameter is removed from interceptor
+  methods that do not have a `context.Context` parameter in their
+  `database/sql` equivalent.
+- No support for Go < 1.13
+- Release tags
