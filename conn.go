@@ -20,6 +20,8 @@ var (
 	_ driver.Pinger             = wrappedConn{}
 	_ driver.Queryer            = wrappedConn{}
 	_ driver.QueryerContext     = wrappedConn{}
+	_ driver.SessionResetter    = wrappedConn{}
+	_ driver.NamedValueChecker  = wrappedConn{}
 )
 
 func (c wrappedConn) Prepare(query string) (driver.Stmt, error) {
@@ -178,4 +180,26 @@ func (c wrappedParentConn) QueryContext(ctx context.Context, query string, args 
 	default:
 		return c.Conn.(driver.Queryer).Query(query, dargs)
 	}
+}
+
+func (c wrappedConn) ResetSession(ctx context.Context) error {
+	conn, ok := c.parent.(driver.SessionResetter)
+	if !ok {
+		return nil
+	}
+
+	return conn.ResetSession(ctx)
+}
+
+func defaultCheckNamedValue(nv *driver.NamedValue) (err error) {
+	nv.Value, err = driver.DefaultParameterConverter.ConvertValue(nv.Value)
+	return err
+}
+
+func (c wrappedConn) CheckNamedValue(v *driver.NamedValue) error {
+	if checker, ok := c.parent.(driver.NamedValueChecker); ok {
+		return checker.CheckNamedValue(v)
+	}
+
+	return defaultCheckNamedValue(v)
 }

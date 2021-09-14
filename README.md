@@ -146,7 +146,7 @@ the power to implement advanced behaviors like caching, sharding, retries, etc.
 
 ## Go version support
 
-Go versions 1.9 and forward are supported.
+Go versions 1.13 and forward are supported.
 
 ## Fork
 
