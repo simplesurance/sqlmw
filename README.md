@@ -19,111 +19,134 @@ in a reuseable way, and more.
 
 Here's a complete example:
 
-```
+```go
 func run(dsn string) {
         // install the wrapped driver
         sql.Register("postgres-mw", sqlmw.Driver(pq.Driver{}, new(sqlInterceptor)))
-        db, err := sql.Open("postgres-mw", dsn)
-        ...
+
+        db, err := sql.Open("pq-mw", "postgres://user@localhost:5432/db")
+        if err != nil {
+                log.Fatalln(err)
+        }
+
+        // use db object as usual
+        _, _ = db.QueryContext(context.Background(), "SELECT * FROM mytable")
 }
 
 type sqlInterceptor struct {
         sqlmw.NullInterceptor
 }
 
-func (in *sqlInterceptor) StmtQueryContext(ctx context.Context, conn driver.StmtQueryContext, query string, args []driver.NamedValue) (driver.Rows, error) {
+func (in *sqlInterceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerContext, query string, args []driver.NamedValue) (driver.Rows, error) {
         startedAt := time.Now()
-        rows, err := conn.QueryContext(ctx, args)
-        log.Debug("executed sql query", "duration", time.Since(startedAt), "query", query, "args", args, "err", err)
+
+        rows, err := conn.QueryContext(ctx, query, args)
+        log.Printf("executed sql query, query: %s, err: %s, duration: %s", query, err, time.Since(startedAt))
+
         return rows, err
 }
 ```
 
 You may override any subset of methods to intercept in the `Interceptor` interface (https://godoc.org/github.com/ngrok/sqlmw#Interceptor):
 
-```
+```go
 type Interceptor interface {
-    // Connection interceptors
-    ConnBeginTx(context.Context, driver.ConnBeginTx, driver.TxOptions) (driver.Tx, error)
-    ConnPrepareContext(context.Context, driver.ConnPrepareContext, string) (driver.Stmt, error)
-    ConnPing(context.Context, driver.Pinger) error
-    ConnExecContext(context.Context, driver.ExecerContext, string, []driver.NamedValue) (driver.Result, error)
-    ConnQueryContext(context.Context, driver.QueryerContext, string, []driver.NamedValue) (driver.Rows, error)
+        // Connection interceptors
+        ConnBeginTx(context.Context, driver.ConnBeginTx, driver.TxOptions) (driver.Tx, error)
+        ConnPrepareContext(context.Context, driver.ConnPrepareContext, string) (driver.Stmt, error)
+        ConnPing(context.Context, driver.Pinger) error
+        ConnExecContext(context.Context, driver.ExecerContext, string, []driver.NamedValue) (driver.Result, error)
+        ConnQueryContext(context.Context, driver.QueryerContext, string, []driver.NamedValue) (driver.Rows, error)
 
-    // Connector interceptors
-    ConnectorConnect(context.Context, driver.Connector) (driver.Conn, error)
+        // Connector interceptors
+        ConnectorConnect(context.Context, driver.Connector) (driver.Conn, error)
 
-    // Results interceptors
-    ResultLastInsertId(driver.Result) (int64, error)
-    ResultRowsAffected(driver.Result) (int64, error)
+        // Results interceptors
+        ResultLastInsertId(driver.Result) (int64, error)
+        ResultRowsAffected(driver.Result) (int64, error)
 
-    // Rows interceptors
-    RowsNext(context.Context, driver.Rows, []driver.Value) error
+        // Rows interceptors
+        RowsNext(driver.Rows, []driver.Value) error
+        RowsClose(driver.Rows) error
 
-    // Stmt interceptors
-    StmtExecContext(context.Context, driver.StmtExecContext, string, []driver.NamedValue) (driver.Result, error)
-    StmtQueryContext(context.Context, driver.StmtQueryContext, string, []driver.NamedValue) (driver.Rows, error)
-    StmtClose(context.Context, driver.Stmt) error
+        // Stmt interceptors
+        StmtExecContext(context.Context, *Stmt, []driver.NamedValue) (driver.Result, error)
+        StmtQueryContext(context.Context, *Stmt, []driver.NamedValue) (driver.Rows, error)
+        StmtClose(*Stmt) error
 
-    // Tx interceptors
-    TxCommit(context.Context, driver.Tx) error
-    TxRollback(context.Context, driver.Tx) error
+        // Tx interceptors
+        TxCommit(driver.Tx) error
+        TxRollback(driver.Tx) error
 }
 ```
 
 Bear in mind that because you are intercepting the calls entirely, that you are responsible for passing control up to the wrapped
 driver in any function that you override, like so:
 
-    func (in *sqlInterceptor) ConnPing(ctx context.Context, conn driver.Pinger) error {
-            return conn.Ping(ctx)
-    }
+```go
+func (in *sqlInterceptor) ConnPing(ctx context.Context, conn driver.Pinger) error {
+        return conn.Ping(ctx)
+}
+```
 
 ## Examples
 
 ### Logging
 
-    func (in *sqlInterceptor) StmtQueryContext(ctx context.Context, conn driver.StmtQueryContext, query string, args []driver.NamedValue) (driver.Rows, error) {
-            startedAt := time.Now()
-            rows, err := conn.QueryContext(ctx, args)
-            log.Debug("executed sql query", "duration", time.Since(startedAt), "query", query, "args", args, "err", err)
-            return rows, err
-    }
+```go
+func (in *sqlInterceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerContext, query string, args []driver.NamedValue) (driver.Rows, error) {
+        startedAt := time.Now()
+
+        rows, err := conn.QueryContext(ctx, query, args)
+        log.Printf("executed sql query, query: %s, err: %s, duration: %s", query, err, time.Since(startedAt))
+
+        return rows, err
+}
+```
 
 ### Tracing
 
-    func (in *sqlInterceptor) StmtQueryContext(ctx context.Context, conn driver.StmtQueryContext, query string, args []driver.NamedValue) (driver.Rows, error) {
-            span := trace.FromContext(ctx).NewSpan(ctx, "StmtQueryContext")
+```go
+func (in *sqlInterceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerContext, query string, args []driver.NamedValue) (driver.Rows, error) {
+            span := trace.FromContext(ctx).NewSpan(ctx, "ConnQueryContext")
             span.Tags["query"] = query
             defer span.Finish()
             rows, err := conn.QueryContext(ctx, args)
             if err != nil {
                     span.Error(err)
             }
+
             return rows, err
     }
+```
 
 ### Retries
 
-    func (in *sqlInterceptor) StmtQueryContext(ctx context.Context, conn driver.StmtQueryContext, query string, args []driver.NamedValue) (driver.Rows, error) {
-            for {
-                    rows, err := conn.QueryContext(ctx, args)
-                    if err == nil {
-                            return rows, nil
-                    }
-                    if err != nil && !isIdempotent(query) {
-                            return nil, err
-                    }
-                    select {
-                    case <-ctx.Done():
-                            return nil, ctx.Err()
-                    case <-time.After(time.Second):
-                    }
+```go
+func (in *sqlInterceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerContext, query string, args []driver.NamedValue) (driver.Rows, error) {
+        for {
+                rows, err := conn.QueryContext(ctx, args)
+                if err == nil {
+                        return rows, nil
+                }
+
+                if err != nil && !isIdempotent(query) {
+                        return nil, err
+                }
+
+                select {
+                case <-ctx.Done():
+                        return nil, ctx.Err()
+
+                case <-time.After(time.Second):
+                }
             }
     }
+```
 
 ### Forwarding Data to method calls on Stmt, Tx, Rows
 
-See [interceptor_wrapping_example_test.go](interceptor_wrapping_example_test.go)
+See [interceptor_wrapping_example_test.go](interceptor_wrapping_example_test.go).
 
 ## Comparison with similar projects
 
