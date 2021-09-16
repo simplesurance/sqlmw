@@ -43,5 +43,5 @@ func (m *MyInterceptor) StmtQueryContext(ctx context.Context, stmt *sqlmw.Stmt, 
 
 // Example demonstrates how data that is created in a ConnPrepareContext()
 // call can be made available on methods of a Stmt.
-// This work analagous for Rows and Tx objects.
+// This work analogous for Rows and Tx objects.
 func Example() {}
