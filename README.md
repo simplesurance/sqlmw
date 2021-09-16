@@ -144,9 +144,14 @@ func (in *sqlInterceptor) ConnQueryContext(ctx context.Context, conn driver.Quer
     }
 ```
 
+
 ### Forwarding Data to method calls on Stmt, Tx, Rows
 
 See [interceptor_wrapping_example_test.go](interceptor_wrapping_example_test.go).
+
+## Projects based on sqlmw
+
+- Opentracing interceptor: [simplesurance/sqltracing](https://github.com/simplesurance/sqltracing)
 
 ## Go version support
 
@@ -163,5 +168,5 @@ the following changes:
 - The additional `context.Context` parameter is removed from interceptor
   methods that do not have a `context.Context` parameter in their
   `database/sql` equivalent.
-- No support for Go < 1.13
+- No support for Go < 1.13 
 - Release tags
