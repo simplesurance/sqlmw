@@ -22,19 +22,6 @@ in a reuseable way, and more.
 Here's a complete example:
 
 ```go
-func run(dsn string) {
-        // install the wrapped driver
-        sql.Register("postgres-mw", sqlmw.WrapDriver(pq.Driver{}, new(sqlInterceptor)))
-
-        db, err := sql.Open("pq-mw", "postgres://user@localhost:5432/db")
-        if err != nil {
-                log.Fatalln(err)
-        }
-
-        // use db object as usual
-        _, _ = db.QueryContext(context.Background(), "SELECT * FROM mytable")
-}
-
 type sqlInterceptor struct {
         sqlmw.NullInterceptor
 }
@@ -46,6 +33,19 @@ func (in *sqlInterceptor) ConnQueryContext(ctx context.Context, conn driver.Quer
         log.Printf("executed sql query, query: %s, err: %s, duration: %s", query, err, time.Since(startedAt))
 
         return rows, err
+}
+
+func run(dsn string) {
+        // install the wrapped driver
+        sql.Register("postgres-mw", sqlmw.WrapDriver(pq.Driver{}, new(sqlInterceptor)))
+
+        db, err := sql.Open("pq-mw", "postgres://user@localhost:5432/db")
+        if err != nil {
+                log.Fatalln(err)
+        }
+
+        // use db object as usual
+        _, _ = db.QueryContext(context.Background(), "SELECT * FROM mytable")
 }
 ```
 
