@@ -170,5 +170,6 @@ the following changes:
 - The additional `context.Context` parameter is removed from interceptor
   methods that do not have a `context.Context` parameter in their
   `database/sql` equivalent.
+- `Driver()` renamed to `WrapDriver`
 - No support for Go < 1.13 
 - Release tags
