@@ -14,9 +14,9 @@ var (
 	_ driver.DriverContext = wrappedDriver{}
 )
 
-// Driver wraps the passed driver and return a new SQL driver that has all of
+// WrapDriver wraps the passed driver and return a new SQL driver that has all of
 // its calls intercepted by the supplied Interceptor object.
-func Driver(driver driver.Driver, intr Interceptor) driver.Driver {
+func WrapDriver(driver driver.Driver, intr Interceptor) driver.Driver {
 	return wrappedDriver{parent: driver, intr: intr}
 }
 

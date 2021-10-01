@@ -24,7 +24,7 @@ func TestRowsClose(t *testing.T) {
 	interceptor := rowsCloseInterceptor{}
 
 	con := fakeConn{}
-	sql.Register(driverName, Driver(&fakeDriver{conn: &con}, &interceptor))
+	sql.Register(driverName, WrapDriver(&fakeDriver{conn: &con}, &interceptor))
 
 	db, err := sql.Open(driverName, "")
 	if err != nil {

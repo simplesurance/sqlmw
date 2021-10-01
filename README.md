@@ -24,7 +24,7 @@ Here's a complete example:
 ```go
 func run(dsn string) {
         // install the wrapped driver
-        sql.Register("postgres-mw", sqlmw.Driver(pq.Driver{}, new(sqlInterceptor)))
+        sql.Register("postgres-mw", sqlmw.WrapDriver(pq.Driver{}, new(sqlInterceptor)))
 
         db, err := sql.Open("pq-mw", "postgres://user@localhost:5432/db")
         if err != nil {

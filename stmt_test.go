@@ -18,7 +18,7 @@ func TestDefaultParameterConversion(t *testing.T) {
 	fakeStmt := fakeStmtWithValStore{}
 	sql.Register(
 		driverNameWithSQLmw,
-		Driver(&fakeDriver{conn: &fakeConn{stmt: &fakeStmt}}, &NullInterceptor{}),
+		WrapDriver(&fakeDriver{conn: &fakeConn{stmt: &fakeStmt}}, &NullInterceptor{}),
 	)
 
 	db, err := sql.Open(driverNameWithSQLmw, "")
@@ -125,7 +125,7 @@ func TestWrappedStmt_CheckNamedValue(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			sql.Register("fake-driver:"+name, Driver(test.fd, &fakeInterceptor{}))
+			sql.Register("fake-driver:"+name, WrapDriver(test.fd, &fakeInterceptor{}))
 			db, err := sql.Open("fake-driver:"+name, "dummy")
 			if err != nil {
 				t.Errorf("Failed to open: %v", err)
@@ -235,7 +235,7 @@ func TestWrapStmt(t *testing.T) {
 	fakeStmt := fakeStmt{}
 	sql.Register(
 		driverNameWithSQLmw,
-		Driver(&fakeDriver{conn: &fakeConn{stmt: &fakeStmt}}, &wrapStmtInterceptor{}),
+		WrapDriver(&fakeDriver{conn: &fakeConn{stmt: &fakeStmt}}, &wrapStmtInterceptor{}),
 	)
 
 	db, err := sql.Open(driverNameWithSQLmw, "")
