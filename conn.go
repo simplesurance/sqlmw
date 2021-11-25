@@ -23,6 +23,8 @@ var (
 	_ driver.SessionResetter    = wrappedConn{}
 	_ driver.NamedValueChecker  = wrappedConn{}
 	_ driver.NamedValueChecker  = wrappedConn{}
+	_ driver.Validator          = wrappedConn{}
+	_ driver.SessionResetter    = wrappedConn{}
 )
 
 func (c wrappedConn) Prepare(query string) (driver.Stmt, error) {
