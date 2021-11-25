@@ -171,5 +171,5 @@ the following changes:
   methods that do not have a `context.Context` parameter in their
   `database/sql` equivalent.
 - `Driver()` renamed to `WrapDriver`
-- No support for Go < 1.13 
+- No support for Go < 1.15
 - Release tags
